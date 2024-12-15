@@ -3,21 +3,16 @@
 import os
 import argparse
 
-# Parse arguments for origin and size
+# Parse arguments for origin and size (make them optional)
 parser = argparse.ArgumentParser(description="Generate a montage of tiles within a specified region.")
-parser.add_argument('-o', '--origin', required=True, help="Origin point in format #x# (e.g., -1x-1)")
-parser.add_argument('-s', '--size', required=True, help="Size in format #x# (e.g., 3x3)")
+parser.add_argument('-o', '--origin', help="Origin point in format #x# (e.g., -1x-1)")
+parser.add_argument('-s', '--size', help="Size in format #x# (e.g., 3x3)")
 parser.add_argument('dir_path', nargs='?', default="./s1zoom_4", help="Directory path containing tile images")
 parser.add_argument('-d', '--dir', help="Directory path containing tile images (overrides positional argument)")
 
 args = parser.parse_args()
 
-# Parse the origin and size
-origin_x, origin_y = map(int, args.origin.split('x'))
-size_x, size_y = map(int, args.size.split('x'))
-
 # Path to directory with tile images and the filler image
-dir_path = "./s1zoom_0"
 dir_path = args.dir if args.dir else args.dir_path
 if dir_path[-1] == "/":
     dir_path = dir_path[:-1]
@@ -34,6 +29,33 @@ for file_name in tile_files:
     parts = file_name.replace(".jpg", "").split("_")
     x, y = int(parts[1]), int(parts[2])
     tile_map[(x, y)] = file_name
+
+# Find full bounds of the grid if no --size is given
+if args.size:
+    size_x, size_y = map(int, args.size.split('x'))
+    min_x = min(x for x, y in tile_map.keys())
+    max_x = max(x for x, y in tile_map.keys())
+    min_y = min(y for x, y in tile_map.keys())
+    max_y = max(y for x, y in tile_map.keys())
+else:
+    print(f"Assuming default tile size as one was not provided...")
+    min_x = min(x for x, y in tile_map.keys())
+    max_x = max(x for x, y in tile_map.keys())
+    min_y = min(y for x, y in tile_map.keys())
+    max_y = max(y for x, y in tile_map.keys())
+    size_x = max_x - min_x + 1
+    size_y = max_y - min_y + 1
+
+# If no --origin is provided, use the center-most coordinate
+if args.origin:
+    origin_x, origin_y = map(int, args.origin.split('x'))
+else:
+    print(f"Assuming default origin as one was not provided...")
+    origin_x = min_x + (max_x - min_x) // 2
+    origin_y = min_y + (max_y - min_y) // 2
+
+if (args.size and not args.origin) or (args.origin and not args.size):
+    print(f"Warning: providing a size with no origin or vice-versa may result in buggy behavior")
 
 # Calculate the bounds of the region to include based on origin and size
 min_x = origin_x - size_x // 2
