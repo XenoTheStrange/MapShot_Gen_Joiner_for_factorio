@@ -1,11 +1,27 @@
 #!/usr/bin/python3
 
 import os
+import argparse
+
+# Parse arguments for origin and size
+parser = argparse.ArgumentParser(description="Generate a montage of tiles within a specified region.")
+parser.add_argument('-o', '--origin', required=True, help="Origin point in format #x# (e.g., -1x-1)")
+parser.add_argument('-s', '--size', required=True, help="Size in format #x# (e.g., 3x3)")
+parser.add_argument('dir_path', nargs='?', default="./s1zoom_4", help="Directory path containing tile images")
+parser.add_argument('-d', '--dir', help="Directory path containing tile images (overrides positional argument)")
+
+args = parser.parse_args()
+
+# Parse the origin and size
+origin_x, origin_y = map(int, args.origin.split('x'))
+size_x, size_y = map(int, args.size.split('x'))
 
 # Path to directory with tile images and the filler image
-dir_path = "./s1zoom_4"
+dir_path = "./s1zoom_0"
+dir_path = args.dir if args.dir else args.dir_path
 if dir_path[-1] == "/":
     dir_path = dir_path[:-1]
+
 filler_image = "bl.png"
 
 # Get the tile files
@@ -19,24 +35,25 @@ for file_name in tile_files:
     x, y = int(parts[1]), int(parts[2])
     tile_map[(x, y)] = file_name
 
-# Find bounds of the grid
-min_x = min(x for x, y in tile_map.keys())
-max_x = max(x for x, y in tile_map.keys())
-min_y = min(y for x, y in tile_map.keys())
-max_y = max(y for x, y in tile_map.keys())
-
-x_tiles = abs(min_x - max_x)+1
-y_tiles = abs(min_y - max_y)+1
-tiles_arg = f"-tile {x_tiles}x{y_tiles}"
+# Calculate the bounds of the region to include based on origin and size
+min_x = origin_x - size_x // 2
+max_x = origin_x + size_x // 2
+min_y = origin_y - size_y // 2
+max_y = origin_y + size_y // 2
 
 # Print debug information
-print(f"Grid bounds: min_x={min_x}, max_x={max_x}, min_y={min_y}, max_y={max_y}")
+print(f"Selected region: Origin=({origin_x},{origin_y}), Size=({size_x},{size_y})")
+print(f"Region bounds: min_x={min_x}, max_x={max_x}, min_y={min_y}, max_y={max_y}")
 
 # Generate the command to run montage
+x_tiles = abs(min_x - max_x) + 1
+y_tiles = abs(min_y - max_y) + 1
+tiles_arg = f"-tile {x_tiles}x{y_tiles}"
+
 command = "montage"
 
 # Loop through rows from top (max_y) to bottom (min_y)
-for y in range(min_y, max_y + 1):  # Correct order: bottom to top
+for y in range(min_y, max_y + 1):
     for x in range(min_x, max_x + 1):
         # Add the tile if it exists, otherwise add the filler image
         image_file = tile_map.get((x, y), filler_image)
