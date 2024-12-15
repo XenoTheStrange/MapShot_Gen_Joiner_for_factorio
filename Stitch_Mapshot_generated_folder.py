@@ -9,6 +9,7 @@ parser.add_argument('-o', '--origin', help="Origin point in format #x# (e.g., -1
 parser.add_argument('-s', '--size', help="Size in format #x# (e.g., 3x3)")
 parser.add_argument('dir_path', nargs='?', default="./s1zoom_4", help="Directory path containing tile images")
 parser.add_argument('-d', '--dir', help="Directory path containing tile images (overrides positional argument)")
+parser.add_argument('-e', '--ext', default="jpg", help="Filename extension / File format for the output image. Defaults to jpg to save space.")
 
 args = parser.parse_args()
 
@@ -85,7 +86,7 @@ for y in range(min_y, max_y + 1):
         print(f"Placing tile at ({x},{y}) -> {image_path}")
 
 # Add geometry and output file name
-command += f' -geometry +0+0 {tiles_arg} {dir_path.split("/")[-1]}.png'
+command += f' -geometry +0+0 {tiles_arg} {dir_path.split("/")[-1]}.{args.ext}'
 
 # Print the montage command
 print(command)
