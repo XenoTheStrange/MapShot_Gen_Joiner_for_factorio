@@ -5,4 +5,9 @@ Argparse really doesn't like dashes in arguments so it needs the space otherwise
 space and quotes not needed if not using negative numbers
 
 Ex. ./script /path/s1zoom_4 --origin "-3 x -3" --size 4x8
-    ./script /path/s1zoom_4 -o 2x4 -s 4x4
+
+./script /path/s1zoom_4 -o 2x4 -s 4x4
+
+    
+    
+NOTE: ChatGPT was used to generate parts of this script in a patchwork sort of way.

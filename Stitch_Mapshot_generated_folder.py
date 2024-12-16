@@ -59,10 +59,17 @@ if (args.size and not args.origin) or (args.origin and not args.size):
     print(f"Warning: providing a size with no origin or vice-versa may result in buggy behavior")
 
 # Calculate the bounds of the region to include based on origin and size
-min_x = origin_x - size_x // 2
-max_x = origin_x + size_x // 2
-min_y = origin_y - size_y // 2
-max_y = origin_y + size_y // 2
+if args.size:
+    min_x = origin_x - size_x // 2
+    max_x = origin_x + size_x // 2 - (1 if size_x % 2 == 0 else 0)
+    min_y = origin_y - size_y // 2
+    max_y = origin_y + size_y // 2 - (1 if size_y % 2 == 0 else 0)
+else:
+    # If no size is specified, calculate based on the full range
+    min_x = min(x for x, y in tile_map.keys())
+    max_x = max(x for x, y in tile_map.keys())
+    min_y = min(y for x, y in tile_map.keys())
+    max_y = max(y for x, y in tile_map.keys())
 
 # Print debug information
 print(f"Selected region: Origin=({origin_x},{origin_y}), Size=({size_x},{size_y})")
